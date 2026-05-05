@@ -1,7 +1,8 @@
 import axios from 'axios';
+import API_BASE_URL from './config';
 
 const API = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: API_BASE_URL,
 });
 
 API.interceptors.request.use((config) => {
@@ -30,6 +31,7 @@ export const createGroup = (data) => API.post('/groups', data);
 export const addMember = (groupId, data) => API.post(`/groups/${groupId}/members`, data);
 export const getMembers = (groupId) => API.get(`/groups/${groupId}/members`);
 export const leaveGroup = (groupId) => API.delete(`/groups/${groupId}/members/me`);
+export const getMyGroups = () => API.get('/groups/my');
 
 // Expenses
 export const addExpense = (data) => API.post('/expense', data);
@@ -40,5 +42,3 @@ export const getBalances = (groupId) => API.get(`/groups/${groupId}/balances`);
 export const settle = (data) => API.post('/settlements/pay', data);
 
 export default API;
-
-export const getMyGroups = () => API.get('/groups/my');

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import Layout from '../components/Layout';
 import { settle, getMembers, getMyGroups } from '../api';
+import API_BASE_URL from '../config';
 
 export default function Settle() {
   const [groups, setGroups] = useState([]);
@@ -64,7 +65,7 @@ export default function Settle() {
 
   const getEsewaUrl = () => {
     if (!result) return '';
-    return `http://localhost:8080/esewa-pay?amount=${result.amount}&txUuid=${result.transaction_uuid}&signature=${encodeURIComponent(result.signature)}`;
+    return `${API_BASE_URL}/esewa-pay?amount=${result.amount}&txUuid=${result.transaction_uuid}&signature=${encodeURIComponent(result.signature)}`;
   };
 
   const handleEsewaRedirect = () => window.open(getEsewaUrl(), '_blank');
