@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import Layout from '../components/Layout';
 import { settle, getMembers, getMyGroups } from '../api';
-import API_BASE_URL from '../config';
 
 export default function Settle() {
   const [groups, setGroups] = useState([]);
@@ -63,12 +62,39 @@ export default function Settle() {
     }
   };
 
-  const getEsewaUrl = () => {
-    if (!result) return '';
-    return `${API_BASE_URL}/esewa-pay?amount=${result.amount}&txUuid=${result.transaction_uuid}&signature=${encodeURIComponent(result.signature)}`;
+  // ✅ Fixed: submits directly to eSewa instead of opening backend URL
+  const handleEsewaRedirect = () => {
+    const esewaForm = document.createElement('form');
+    esewaForm.method = 'POST';
+    esewaForm.action = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+
+    const fields = {
+      amount: result.amount,
+      total_amount: result.total_amount,
+      transaction_uuid: result.transaction_uuid,
+      product_code: result.product_code,
+      signature: result.signature,
+      success_url: result.success_url,
+      failure_url: result.failure_url,
+    };
+
+    Object.entries(fields).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      esewaForm.appendChild(input);
+    });
+
+    document.body.appendChild(esewaForm);
+    esewaForm.submit();
   };
 
-  const handleEsewaRedirect = () => window.open(getEsewaUrl(), '_blank');
+  // ✅ Fixed: QR code points to eSewa directly
+  const getEsewaQRUrl = () => {
+    if (!result) return '';
+    return `https://rc-epay.esewa.com.np/api/epay/main/v2/form?amount=${result.amount}&total_amount=${result.total_amount}&transaction_uuid=${result.transaction_uuid}&product_code=${result.product_code}&signature=${encodeURIComponent(result.signature)}&success_url=${encodeURIComponent(result.success_url)}&failure_url=${encodeURIComponent(result.failure_url)}`;
+  };
 
   const formatNPR = (amt) => `NPR ${Number(amt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
   const selectedMember = members.find(m => m.userId == form.toUserId);
@@ -143,7 +169,6 @@ export default function Settle() {
                 <span className="badge badge-green">Recorded</span>
               </div>
               <div className="card-body">
-                {/* Amount */}
                 <div style={{ textAlign: 'center', padding: '12px 0 16px' }}>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>Amount to Pay</div>
                   <div style={{ fontSize: 34, fontWeight: 700, fontFamily: 'DM Mono, monospace', color: 'var(--green)' }}>
@@ -156,9 +181,7 @@ export default function Settle() {
                   )}
                 </div>
 
-                {/* Two payment options */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-                  {/* Option 1: Click link */}
                   <div style={{ border: '1.5px solid var(--green)', borderRadius: 'var(--radius-sm)', padding: '14px', textAlign: 'center' }}>
                     <div style={{ fontSize: 24, marginBottom: 6 }}>🖥️</div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Desktop / Two devices</div>
@@ -166,8 +189,6 @@ export default function Settle() {
                       Open eSewa →
                     </button>
                   </div>
-
-                  {/* Option 2: QR code */}
                   <div style={{ border: '1.5px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '14px', textAlign: 'center' }}>
                     <div style={{ fontSize: 24, marginBottom: 6 }}>📱</div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Single phone</div>
@@ -177,11 +198,10 @@ export default function Settle() {
                   </div>
                 </div>
 
-                {/* QR Code */}
                 {showQR && (
                   <div style={{ textAlign: 'center', padding: '16px', background: 'var(--bg)', borderRadius: 'var(--radius-sm)', marginBottom: 16 }}>
                     <QRCodeSVG
-                      value={getEsewaUrl()}
+                      value={getEsewaQRUrl()}
                       size={180}
                       bgColor="#ffffff"
                       fgColor="#00875A"
@@ -197,7 +217,6 @@ export default function Settle() {
                   </div>
                 )}
 
-                {/* Transaction ID */}
                 <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 14 }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Transaction ID</div>
                   <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: 'var(--text)', wordBreak: 'break-all' }}>
@@ -205,7 +224,6 @@ export default function Settle() {
                   </div>
                 </div>
 
-                {/* Test credentials */}
                 <div style={{ background: '#FFFBEB', border: '1px solid #F6AD55', borderRadius: 'var(--radius-sm)', padding: '12px 14px' }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#B7791F', marginBottom: 8 }}>🧪 eSewa Test Credentials (UAT)</div>
                   <div style={{ fontSize: 13, fontFamily: 'DM Mono, monospace', color: '#744210', lineHeight: 2 }}>
