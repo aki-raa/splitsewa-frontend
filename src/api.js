@@ -40,5 +40,5 @@ export const getBalances = (groupId) => API.get(`/groups/${groupId}/balances`);
 
 // Settlement
 export const settle = (data) => API.post('/settlements/pay', data);
-
+export const getSummary = () => API.get('/groups/summary');
 export default API;
