@@ -2,19 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useAuth } from '../AuthContext';
-import { getMyGroups } from '../api';
+import { getMyGroups, getSummary } from '../api';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
+  const [summary, setSummary] = useState({ totalOwed: 0, totalYouOwe: 0 });
 
   useEffect(() => {
     getMyGroups().then(res => setGroups(res.data)).catch(() => {});
+    getSummary().then(res => setSummary(res.data)).catch(() => {});
   }, []);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const fmt = (amt) => `NPR ${Number(amt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
   return (
     <Layout>
@@ -29,15 +32,17 @@ export default function Dashboard() {
           <div className="stat-value green">{groups.length}</div>
           <div className="stat-sub">Active groups</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Currency</div>
-          <div className="stat-value" style={{ fontSize: '20px' }}>NPR ₨</div>
-          <div className="stat-sub">Nepali Rupee</div>
+
+        <div className="stat-card" style={{ borderLeft: '3px solid var(--green)' }}>
+          <div className="stat-label">You Are Owed</div>
+          <div className="stat-value green" style={{ fontSize: 20 }}>{fmt(summary.totalOwed)}</div>
+          <div className="stat-sub" style={{ color: 'var(--green)' }}>Others owe you</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Settlement</div>
-          <div className="stat-value" style={{ fontSize: '16px', color: 'var(--green)', marginTop: 4 }}>eSewa</div>
-          <div className="stat-sub">UAT sandbox ready</div>
+
+        <div className="stat-card" style={{ borderLeft: '3px solid var(--red)' }}>
+          <div className="stat-label">You Owe</div>
+          <div className="stat-value red" style={{ fontSize: 20 }}>{fmt(summary.totalYouOwe)}</div>
+          <div className="stat-sub" style={{ color: 'var(--red)' }}>You need to pay</div>
         </div>
       </div>
 
@@ -57,9 +62,9 @@ export default function Dashboard() {
           <div className="card-body">
             {[
               { n: '1', t: 'Create a group', d: 'Add friends by their email address' },
-              { n: '2', t: 'Add shared expenses', d: 'Splits equally in NPR automatically' },
-              { n: '3', t: 'Check balances', d: 'Net view — who owes whom and how much' },
-              { n: '4', t: 'Settle via eSewa', d: 'One-tap digital payment, no cash needed' },
+              { n: '2', t: 'Add shared expenses', d: 'Equal or custom split in NPR' },
+              { n: '3', t: 'Check balances', d: 'Net view — who owes whom' },
+              { n: '4', t: 'Settle via eSewa', d: 'One-tap payment or scan QR' },
             ].map((step) => (
               <div key={step.n} style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'flex-start' }}>
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--green)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>{step.n}</div>
