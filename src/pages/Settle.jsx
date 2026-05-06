@@ -22,11 +22,7 @@ export default function Settle() {
     if (saved) {
       const data = JSON.parse(saved);
       setPrefilled(data);
-      setForm({
-        groupId: String(data.groupId),
-        toUserId: String(data.toUserId),
-        amount: String(data.amount)
-      });
+      setForm({ groupId: String(data.groupId), toUserId: String(data.toUserId), amount: String(data.amount) });
       loadMembers(data.groupId);
       localStorage.removeItem('settleData');
     }
@@ -37,9 +33,7 @@ export default function Settle() {
     try {
       const res = await getMembers(groupId);
       setMembers(res.data);
-    } catch {
-      setMembers([]);
-    }
+    } catch { setMembers([]); }
   };
 
   const handleGroupChange = (e) => {
@@ -51,18 +45,13 @@ export default function Settle() {
 
   const handleSettle = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-    setResult(null);
-    setShowQR(false);
-
+    setError(''); setLoading(true); setResult(null); setShowQR(false);
     try {
       const res = await settle({
         groupId: Number(form.groupId),
         toUserId: Number(form.toUserId),
         amount: parseFloat(form.amount),
       });
-
       const raw = res.data;
       const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
       setResult(data);
@@ -73,6 +62,7 @@ export default function Settle() {
     }
   };
 
+  // ✅ Fixed: submits directly to eSewa instead of opening backend URL
   const handleEsewaRedirect = () => {
     const esewaForm = document.createElement('form');
     esewaForm.method = 'POST';
@@ -100,14 +90,13 @@ export default function Settle() {
     esewaForm.submit();
   };
 
+  // ✅ Fixed: QR code points to eSewa directly
   const getEsewaQRUrl = () => {
     if (!result) return '';
     return `https://rc-epay.esewa.com.np/api/epay/main/v2/form?amount=${result.amount}&total_amount=${result.total_amount}&transaction_uuid=${result.transaction_uuid}&product_code=${result.product_code}&signature=${encodeURIComponent(result.signature)}&success_url=${encodeURIComponent(result.success_url)}&failure_url=${encodeURIComponent(result.failure_url)}`;
   };
 
-  const formatNPR = (amt) =>
-    `NPR ${Number(amt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-
+  const formatNPR = (amt) => `NPR ${Number(amt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
   const selectedMember = members.find(m => m.userId == form.toUserId);
 
   return (
@@ -120,91 +109,53 @@ export default function Settle() {
       {error && <div className="alert alert-error">⚠️ {error}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        
         {/* Form */}
         <div className="card">
           <div className="card-header"><h2>Settlement Details</h2></div>
           <div className="card-body">
-
             {prefilled && (
               <div className="alert alert-success" style={{ marginBottom: 16 }}>
                 ✓ Pre-filled: {prefilled.fromUsername} → {prefilled.toUsername}
               </div>
             )}
-
             <form onSubmit={handleSettle}>
-              
               <div className="form-group">
                 <label className="form-label">Group</label>
                 <select className="form-input" value={form.groupId} onChange={handleGroupChange} required>
                   <option value="">Select group</option>
-                  {groups.map((g) => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
-                  ))}
+                  {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               </div>
-
               <div className="form-group">
                 <label className="form-label">Pay To</label>
-
                 {members.length > 0 ? (
-                  <select
-                    className="form-input"
-                    value={form.toUserId}
-                    onChange={(e) => setForm({ ...form, toUserId: e.target.value })}
-                    required
-                  >
+                  <select className="form-input" value={form.toUserId}
+                    onChange={(e) => setForm({ ...form, toUserId: e.target.value })} required>
                     <option value="">Select member to pay</option>
                     {members.map((m) => (
-                      <option key={m.userId} value={m.userId}>
-                        {m.username} ({m.email})
-                      </option>
+                      <option key={m.userId} value={m.userId}>{m.username} ({m.email})</option>
                     ))}
                   </select>
                 ) : (
-                  <div style={{
-                    padding: '10px 14px',
-                    border: '1.5px solid var(--border)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: 13,
-                    color: 'var(--text-muted)'
-                  }}>
+                  <div style={{ padding: '10px 14px', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 13, color: 'var(--text-muted)' }}>
                     Select a group first
                   </div>
                 )}
-
                 {selectedMember && (
-                  <div style={{
-                    marginTop: 8,
-                    padding: '8px 12px',
-                    background: 'var(--green-dim)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: 12,
-                    color: 'var(--green)'
-                  }}>
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: 'var(--green-dim)', borderRadius: 'var(--radius-sm)', fontSize: 12, color: 'var(--green)' }}>
                     Paying to: <strong>{selectedMember.username}</strong> ({selectedMember.email})
                   </div>
                 )}
               </div>
-
               <div className="form-group">
                 <label className="form-label">Amount (NPR)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="0.00"
-                  value={form.amount}
-                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  min="1"
-                  step="0.01"
-                  required
-                />
+                <input type="number" className="form-input" placeholder="0.00"
+                  value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                  min="1" step="0.01" required />
               </div>
-
               <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
                 {loading ? 'Processing...' : '💚 Settle & Generate Payment'}
               </button>
-
             </form>
           </div>
         </div>
@@ -217,22 +168,12 @@ export default function Settle() {
                 <h2>✅ Debt Settled</h2>
                 <span className="badge badge-green">Recorded</span>
               </div>
-
               <div className="card-body">
-
                 <div style={{ textAlign: 'center', padding: '12px 0 16px' }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
-                    Amount to Pay
-                  </div>
-                  <div style={{
-                    fontSize: 34,
-                    fontWeight: 700,
-                    fontFamily: 'DM Mono, monospace',
-                    color: 'var(--green)'
-                  }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>Amount to Pay</div>
+                  <div style={{ fontSize: 34, fontWeight: 700, fontFamily: 'DM Mono, monospace', color: 'var(--green)' }}>
                     {formatNPR(result.amount || form.amount)}
                   </div>
-
                   {selectedMember && (
                     <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
                       to <strong>{selectedMember.username}</strong>
@@ -241,48 +182,81 @@ export default function Settle() {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-                  
-                  <button className="btn btn-primary btn-full" onClick={handleEsewaRedirect}>
-                    Open eSewa →
-                  </button>
-
-                  <button className="btn btn-ghost btn-full" onClick={() => setShowQR(!showQR)}>
-                    {showQR ? 'Hide QR' : 'Show QR'}
-                  </button>
-
+                  <div style={{ border: '1.5px solid var(--green)', borderRadius: 'var(--radius-sm)', padding: '14px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>🖥️</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Desktop / Two devices</div>
+                    <button className="btn btn-primary btn-full btn-sm" onClick={handleEsewaRedirect}>
+                      Open eSewa →
+                    </button>
+                  </div>
+                  <div style={{ border: '1.5px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '14px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, marginBottom: 6 }}>📱</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Single phone</div>
+                    <button className="btn btn-ghost btn-full btn-sm" onClick={() => setShowQR(!showQR)}>
+                      {showQR ? 'Hide QR' : 'Show QR'}
+                    </button>
+                  </div>
                 </div>
 
                 {showQR && (
-                  <div style={{ textAlign: 'center', padding: 16 }}>
-                    <QRCodeSVG value={getEsewaQRUrl()} size={180} />
+                  <div style={{ textAlign: 'center', padding: '16px', background: 'var(--bg)', borderRadius: 'var(--radius-sm)', marginBottom: 16 }}>
+                    <QRCodeSVG
+                      value={getEsewaQRUrl()}
+                      size={180}
+                      bgColor="#ffffff"
+                      fgColor="#00875A"
+                      level="M"
+                      style={{ margin: '0 auto', display: 'block' }}
+                    />
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10 }}>
+                      Scan with phone camera to open eSewa
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--green)', marginTop: 4, fontWeight: 600 }}>
+                      {formatNPR(result.amount || form.amount)} pre-filled
+                    </div>
                   </div>
                 )}
 
-                <div style={{
-                  background: 'var(--bg)',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '10px 14px'
-                }}>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    Transaction ID
-                  </div>
-                  <div style={{ fontSize: 11 }}>
+                <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 14 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Transaction ID</div>
+                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: 'var(--text)', wordBreak: 'break-all' }}>
                     {result.transaction_uuid}
                   </div>
                 </div>
 
+                <div style={{ background: '#FFFBEB', border: '1px solid #F6AD55', borderRadius: 'var(--radius-sm)', padding: '12px 14px' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#B7791F', marginBottom: 8 }}>🧪 eSewa Test Credentials (UAT)</div>
+                  <div style={{ fontSize: 13, fontFamily: 'DM Mono, monospace', color: '#744210', lineHeight: 2 }}>
+                    <div>eSewa ID: <strong>9806800001</strong></div>
+                    <div>Password: <strong>Nepal@123</strong></div>
+                    <div>Token: <strong>123456</strong></div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
             <div className="card">
               <div className="empty-state">
+                <div style={{ fontSize: 48, marginBottom: 12 }}>💚</div>
                 <h3>eSewa Settlement</h3>
-                <p>Fill in the details to generate payment</p>
+                <p style={{ marginBottom: 20 }}>Fill in the details to generate payment options</p>
+                <div style={{ textAlign: 'left', background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '16px', width: '100%' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: 'var(--text)' }}>Payment options after settling:</div>
+                  {[
+                    '🖥️  Click link — opens eSewa in browser',
+                    '📱  Scan QR — for single phone users',
+                    '💚  Amount pre-filled automatically',
+                    '✅  Debt marked settled in database',
+                  ].map((step, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 8, fontSize: 13, color: 'var(--text-muted)' }}>
+                      {step}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
         </div>
-
       </div>
     </Layout>
   );
