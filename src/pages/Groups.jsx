@@ -163,7 +163,6 @@ export default function Groups() {
                         <div>
                           <div style={{ fontWeight: 600, fontSize: 14 }}>{m.username}</div>
                           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.email}</div>
-                          {m.phone && <div style={{ fontSize: 12, color: 'var(--green)' }}>📱 {m.phone}</div>}
                         </div>
                         <span className="badge badge-gray" style={{ marginLeft: 'auto' }}>ID: {m.userId}</span>
                       </div>
