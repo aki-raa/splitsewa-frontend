@@ -165,13 +165,14 @@ export default function Groups() {
                           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.email}</div>
                           {m.phone && <div style={{ fontSize: 12, color: 'var(--green)' }}>📱 {m.phone}</div>}
                         </div>
+                        <span className="badge badge-gray" style={{ marginLeft: 'auto' }}>ID: {m.userId}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
               <div style={{ background: 'var(--green-dim)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', fontSize: 13, color: 'var(--green)' }}>
-                💡 Use member phone numbers above for eSewa payments
+                💡 Use member IDs from above when settling payments
               </div>
             </div>
           </div>
