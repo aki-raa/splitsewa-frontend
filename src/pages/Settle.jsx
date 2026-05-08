@@ -120,7 +120,7 @@ export default function Settle() {
       {error && <div className="alert alert-error">⚠️ {error}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-
+        
         {/* Form */}
         <div className="card">
           <div className="card-header"><h2>Settlement Details</h2></div>
@@ -133,7 +133,7 @@ export default function Settle() {
             )}
 
             <form onSubmit={handleSettle}>
-
+              
               <div className="form-group">
                 <label className="form-label">Group</label>
                 <select className="form-input" value={form.groupId} onChange={handleGroupChange} required>
@@ -157,7 +157,7 @@ export default function Settle() {
                     <option value="">Select member to pay</option>
                     {members.map((m) => (
                       <option key={m.userId} value={m.userId}>
-                        {m.username}
+                        {m.username} ({m.email})
                       </option>
                     ))}
                   </select>
@@ -176,17 +176,13 @@ export default function Settle() {
                 {selectedMember && (
                   <div style={{
                     marginTop: 8,
-                    padding: '10px 12px',
+                    padding: '8px 12px',
                     background: 'var(--green-dim)',
                     borderRadius: 'var(--radius-sm)',
                     fontSize: 12,
-                    color: 'var(--green)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
+                    color: 'var(--green)'
                   }}>
-                    <span>Paying to: <strong>{selectedMember.username}</strong></span>
-                    {selectedMember.phone && <span>eSewa: <strong>{selectedMember.phone}</strong></span>}
+                    Paying to: <strong>{selectedMember.username}</strong> ({selectedMember.email})
                   </div>
                 )}
               </div>
@@ -240,20 +236,20 @@ export default function Settle() {
                   {selectedMember && (
                     <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
                       to <strong>{selectedMember.username}</strong>
-                      {selectedMember.phone && (
-                        <span> · eSewa: <strong style={{ color: 'var(--green)' }}>{selectedMember.phone}</strong></span>
-                      )}
                     </div>
                   )}
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+                  
                   <button className="btn btn-primary btn-full" onClick={handleEsewaRedirect}>
                     Open eSewa →
                   </button>
+
                   <button className="btn btn-ghost btn-full" onClick={() => setShowQR(!showQR)}>
                     {showQR ? 'Hide QR' : 'Show QR'}
                   </button>
+
                 </div>
 
                 {showQR && (
